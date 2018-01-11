@@ -10,8 +10,6 @@ class ConvNet():
             dtype=tf.float32, shape=[None, self.size, self.size, self.channel], name='images')
         self.labels = tf.placeholder(
             dtype=tf.int64, shape=[None], name='labels')
-        self.keep_prob = tf.placeholder(
-            dtype=tf.float32, name='keep_prob')
         model = self.model()
         # 目标函数
         self.objective = tf.reduce_sum(
@@ -123,12 +121,11 @@ class ConvNet():
             # 按照 batch size 批量训练
             for i in range(0, len(train_images), batch_size):
                 images, labels = train_images[i: i + batch_size], train_labels[i: i + batch_size]
-                [_, loss, _] = self.sess.run(
+                [_, loss] = self.sess.run(
                     fetches=[self.optimizer, self.loss],
                     feed_dict={self.images: images,
-                               self.labels: labels,
-                               self.keep_prob: 0.5})
-                train_loss += loss * images.shape[0]
+                               self.labels: labels})
+                train_loss += loss * len(images)
             train_loss = 1.0 * train_loss / len(train_images)
 
             # 计算验证集的 loss 和准确率
@@ -138,10 +135,9 @@ class ConvNet():
                 [avg_accuracy, loss] = self.sess.run(
                     fetches=[self.accuracy, self.loss],
                     feed_dict={self.images: images,
-                               self.labels: labels,
-                               self.keep_prob: 1.0})
-                valid_accuracy += avg_accuracy * images.shape[0]
-                valid_loss += loss * images.shape[0]
+                               self.labels: labels})
+                valid_accuracy += avg_accuracy * len(images)
+                valid_loss += loss * len(images)
             valid_accuracy = 1.0 * valid_accuracy / len(valid_images)
             valid_loss = 1.0 * valid_loss / len(valid_images)
 
